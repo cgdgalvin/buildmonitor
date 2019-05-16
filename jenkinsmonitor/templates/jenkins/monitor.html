@@ -2,24 +2,50 @@
 <html>
     <head>
         <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+        <link rel="stylesheet" href="{% static 'scss/style.css' %}">
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
         <script>
-            window.onload = async function () {
-                await sleep(10000);
-                if ({{ monitor_id }} == 1) {
-                    window.location.replace("http://localhost:8000/jenkins/monitor/2");
+            window.onload = function () {
+                createClock();
+                loadNextMonitorAfterWait(10000)
+            }
+
+            async function loadNextMonitorAfterWait(wait) {
+                await sleep(wait);
+                if ('{{ monitor_id }}' == '5cc338388af8fb49d870a72b') {
+                    window.location.replace("http://localhost:8000/jenkins/monitor/5cc36dc5e5de66bb9da603ec");
+                } else if ('{{ monitor_id }}' == '5cc36dc5e5de66bb9da603ec') {
+                    window.location.replace("http://localhost:8000/jenkins/monitor/5cc36dc5e5de66bb9da603ed");
                 } else {
-                    window.location.replace("http://localhost:8000/jenkins/monitor/1");
+                    window.location.replace("http://localhost:8000/jenkins/monitor/5cc338388af8fb49d870a72b");
                 }
             }
 
             function sleep(ms) {
                 return new Promise(resolve => setTimeout(resolve, ms));
             }
+            
+            function createClock() {
+                var currentDate = new Date();
+                $('#date').text(zeroNumber(currentDate.getDate()) + "/" + zeroNumber(currentDate.getMonth() + 1) + "/" + currentDate.getFullYear())
+                $('#clock').text(zeroNumber(currentDate.getHours()) + ":" + zeroNumber(currentDate.getMinutes()));
+            }
+
+            function zeroNumber(num) {
+                if (num < 10)
+                    num = "0" + num;
+                return num;
+            }
         </script>
     </head>
     <body>
-        <h1 id="title">{{title}}</h1>
+        <div>
+            <h1 id="date">00/00/0000</h1>
+            <h1 id="title">{{title}}</h1>
+            <h1 id="clock">00:00</h1>
+        </div>
+        <div class="nodeContainer">
         {% for job in jobs %}
             <div class="background-{{ job.color }} job">
                 <h3 style="width: 90%; margin: 5%;">{{ job.name }}</h3>
@@ -30,8 +56,20 @@
                 {% endif %}
             </div>
         {% endfor %}
-        <div id="sonar-tile">
-
+        </div>
+        <div id="sonar-tile" class="grid-container">
+            <div class="grid-item-1">
+                <img src="{% static 'images/bug.png' %}" class="sonar-icon">
+                <h2>{{ sonar.bugs.value }}</h2>
+            </div>
+            <div class="grid-item-2">
+                <img src="{% static 'images/violation.svg' %}" class="sonar-icon">
+                <h2>{{ sonar.violations.value }}</h2>
+            </div>
+            <div class="grid-item-3">
+                <img src="{% static 'images/vulnerability.png' %}" class="sonar-icon">
+                <h2>{{ sonar.vulnerabilities.value }}</h2>
+            </div>
         </div>
     </body>
 </html>
