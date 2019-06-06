@@ -1,18 +1,35 @@
-class MonitorService:
-    targeryen_jobs = {'title': 'House Targaryen - VI',
-                      'jobs': ['VI Data Warehouse - Unit Test', 'Deploy VI Tables and Stored Procedures',
-                               'Run Stored Procedures (DEV)',
-                               'VI Data Warehouse - Integration Test', 'VI Data Warehouse - Acceptance Test',
-                               'Transformation Runner - DAL TC (UAT)', 'Transformation Runner - DAL (LIVE)',
-                               'Transformation Runner - DAL TC (LIVE)'],
-                      'sonar_key': 'com.vistair:vi:vi-data-warehouse'}
-    lannister_jobs = {'title': 'House Lannister - QualityNet',
-                      'jobs': ['Dev Build QualityNet Trunk', 'QualityNet-Sanity-Tests', 'QualityNet Sonar Analysis'],
-                      'sonar_key': 'com.vistair:vi:vi-data-warehouse'}
+import configparser
 
-    def get_monitor(self, monitor):
-        if monitor == 1:
-            return self.targeryen_jobs
-        if monitor == 2:
-            return self.lannister_jobs
-        return []
+from jenkinsmonitor.entities.monitor import Monitor
+
+
+class MonitorService:
+
+    dao = ""
+
+    def __init__(self):
+        config = configparser.ConfigParser()
+        config.read('application.properties')
+
+        if config.has_section('MONGO'):
+            from jenkinsmonitor.dao.mongo_dao import MongoDao
+            self.dao = MongoDao()
+        if config.has_section('MYSQL'):
+            from jenkinsmonitor.dao.mysql_dao import MySqlDao
+            self.dao = MySqlDao()
+
+    def get_monitor(self, monitor_id):
+        return self.dao.get_monitor(monitor_id)
+
+    def get_monitors(self):
+        monitors = []
+
+        for monitor in self.dao.get_monitors():
+            monitors.append(Monitor(monitor['_id'], monitor['title'], monitor['jobs'], monitor['sonar_key']))
+
+        return monitors
+
+    def create_monitor(self, monitor):
+        self.dao.create_monitor(monitor)
+
+

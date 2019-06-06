@@ -10,7 +10,7 @@ class JenkinsService:
         config = configparser.ConfigParser()
         config.read('application.properties')
         self.jenkins_server = jenkins.Jenkins(config['JENKINS']['url'], username=config['JENKINS']['username'],
-                                              password=config['JENKINS']['password'])
+                                              password=config['JENKINS']['token'])
 
     def get_jenkins_jobs(self):
         return self.jenkins_server.get_jobs()
@@ -31,7 +31,8 @@ class JenkinsService:
     def get_build_info(self, name, number):
         return self.jenkins_server.get_build_info(name, number, depth=0)
 
-    def calculate_progress(self, timestamp, estimated_time):
+    @staticmethod
+    def calculate_progress(timestamp, estimated_time):
         current_running_time = int(round(time.time() * 1000)) - timestamp
         progress = int(round(current_running_time / estimated_time * 100))
         return progress
